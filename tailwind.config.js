@@ -7,8 +7,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        neon: '#ff5c00',
-        bgcolor: '#131313',
+        neon: '#200589',
+        bgcolor: '#fff',
+        temp: '#fff'
       },
     },
   },
