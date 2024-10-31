@@ -1,50 +1,97 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Oddsly!
 
-Currently, two official plugins are available:
+A web application for comparing betting odds across multiple sportsbooks to help users find the best value bets. This app leverages various formulas, data aggregation from APIs, and React components to create an interactive interface with real-time data.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
 
-## Expanding the ESLint configuration
+### Front end
+- [x] **Vite**
+- [x] **React**
+- [x] **TypeScript**
+- [x] **TailwindCSS**
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Backend
+- [x] **Node.js**
 
-- Configure the top-level `parserOptions` property like this:
+### Tools and Libraries
+- [x] **ESLint**
+- [x] **MaterialUI**
+- [x] **APIs**:
+  - [The Odds API](https://the-odds-api.com/): For fetching odds data
+  - Additional data from Express server with Axios for API requests
+- [x] **Axios**:
+- [x] **dotenv**
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Features
+- Aggregated betting odds across multiple sportsbooks
+- Market and bookmaker filters
+- Kelly Criterion recommended bets based on bankroll input
+- Comprehensive player prop markets and specific match details
+- Toggle feature to display only Kelly-recommended bets
+
+## Installation
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/hackermanosu/oddsly.git
+   ```
+2. Install dependencies:
+   ```bash
+   cd oddsly
+   npm install
+   ```
+3. Add your API key to `.env`:
+   ```plaintext
+   VITE_ODDS_API_KEY=your_api_key
+   ```
+4. Run the app:
+   ```bash
+   npm run dev
+   ```
+
+## Components
+
+### `OddsPage`
+This component allows users to view odds across various markets (e.g., moneyline, spreads) and filter results by bookmakers. Users can also toggle to view only bets recommended by the **Kelly Criterion**.
+
+### `MatchDetails`
+Displays detailed match information, including odds changes and potential value bets calculated based on implied probability.
+
+### `PlayerProps`
+A dedicated component for player-specific prop bets, including markets for individual performance metrics (e.g., touchdowns, assists).
+
+## API and Utility Modules
+
+### `api.ts`
+Handles interactions with The Odds API:
+- **fetchSports**: Fetches a list of sports available for betting.
+- **fetchBookmakers**: Retrieves bookmakers offering odds.
+- **fetchOdds**: Retrieves odds by sport and market.
+- **fetchMatchDetails**: Fetches detailed odds for a specific match.
+- **fetchPlayerProps**: Retrieves player prop markets for specific player metrics.
+
+### `oddsConversion.ts`
+Contains utility functions for odds format conversions, specifically:
+- **convertToAmericanOdds**: Converts decimal odds to American format.
+
+## Formulas and Calculations
+
+### Implied Probability
+Used to determine if a bet offers positive value. Calculated as:
+```javascript
+impliedProbability = 1 / decimalOdds;
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+### Kelly Criterion
+Provides bet size recommendations based on the bankroll and edge:
+```javascript
+kellyFraction = (edge / odds) * (bankroll);
 ```
+
+### Conversion Formulas
+**Decimal to American Odds**:
+- Positive: `+((decimalOdds - 1) * 100)`
+- Negative: `-(100 / (decimalOdds - 1))`
+
+## License
+This project is licensed under the MIT License.
