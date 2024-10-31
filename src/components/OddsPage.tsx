@@ -8,7 +8,7 @@ import {
   GridCellParams,
 } from '@mui/x-data-grid';
 import { fetchOdds } from '../services/api';
-import { TextField, Switch, FormControlLabel } from '@mui/material';
+import { TextField, Button, Switch, FormControlLabel } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 
@@ -739,44 +739,72 @@ const OddsPage: React.FC = () => {
         </div>
 
       {/* Sports List */}
-      <div className="overflow-x-auto mb-4 border-b border-neon">
-        <div className="flex space-x-4 min-w-min px-4 pb-2 justify-center">
+      <div
+        style={{
+          overflowX: 'auto',
+          marginBottom: '16px',
+          borderBottom: '1px solid #00f',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            padding: '0 16px 8px',
+            minWidth: '800px',
+          }}
+        >
           {MAIN_SPORTS.map((sport) => (
-            <button
+            <Button
               key={sport.key}
               onClick={() => handleSportClick(sport.key)}
-              className={`p-2 border-b-2 text-3xl whitespace-nowrap ${
-                selectedSport === sport.key ? 'border-neon' : 'border-transparent'
-              } text-black`}
+              style={{
+                borderBottom: selectedSport === sport.key ? '2px solid #00f' : 'none',
+                fontSize: '24px',
+                marginRight: '16px',
+                whiteSpace: 'nowrap',
+              }}
             >
               {sport.title}
-            </button>
+            </Button>
           ))}
-          <button
+          <Button
             onClick={() => handleSportClick('soccer')}
-            className={`p-2 border-b-2 text-3xl whitespace-nowrap ${
-              showSoccerLeagues ? 'border-neon' : 'border-transparent'
-            } text-black`}
+            style={{
+              borderBottom: showSoccerLeagues ? '2px solid #00f' : 'none',
+              fontSize: '24px',
+              whiteSpace: 'nowrap',
+            }}
           >
             Soccer
-          </button>
+          </Button>
         </div>
       </div>
 
+
       {/* Soccer Leagues */}
       {showSoccerLeagues && (
-        <div className="overflow-x-auto mb-4 border-b border-neon">
-          <div className="flex space-x-4 min-w-min px-4 pb-2">
+        <div
+          style={{
+            overflowX: 'auto',
+            marginBottom: '16px',
+            borderBottom: '1px solid #00f',
+          }}
+        >
+          <div style={{ display: 'flex', padding: '0 16px 8px', justifyContent: 'center' }}>
             {SOCCER_LEAGUES.map((league) => (
-              <button
+              <Button
                 key={league.key}
                 onClick={() => handleSoccerLeagueClick(league.key)}
-                className={`p-2 border-b-2 text-xl whitespace-nowrap ${
-                  selectedSoccerLeague === league.key ? 'border-neon' : 'border-transparent'
-                } text-black`}
+                style={{
+                  borderBottom:
+                    selectedSoccerLeague === league.key ? '2px solid #00f' : 'none',
+                  fontSize: '18px',
+                  marginRight: '16px',
+                }}
               >
                 {league.title}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -784,17 +812,27 @@ const OddsPage: React.FC = () => {
 
       {/* Market Selection and Bookmaker Filters */}
       <div>
-        <div className="flex justify-center mb-4 space-x-4 border-b border-neon">
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '16px',
+            borderBottom: '1px solid #00f',
+          }}
+        >
           {marketOptions.map((option) => (
-            <button
+            <Button
               key={option.value}
               onClick={() => setSelectedMarket(option.value)}
-              className={`p-2 border-b-2 text-xl ${
-                selectedMarket === option.value ? 'border-neon' : 'border-transparent'
-              } text-black`}
+              style={{
+                borderBottom:
+                  selectedMarket === option.value ? '2px solid #00f' : 'none',
+                fontSize: '18px',
+                marginRight: '16px',
+              }}
             >
               {option.label}
-            </button>
+            </Button>
           ))}
         </div>
 
