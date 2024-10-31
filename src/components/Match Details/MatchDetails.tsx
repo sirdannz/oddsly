@@ -3,7 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
 import { fetchBothMatchDetails } from '../../services/api';
 import { ArrowLeft } from 'lucide-react';
-import { PlayerProps } from '../Player Props/PlayerProps';
+// import { PlayerProps } from '../Player Props/PlayerProps';
+import { DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 interface Outcome {
   name: string;
@@ -34,32 +36,19 @@ interface MatchDetails {
   bookmakers: Bookmaker[];
 }
 
-interface OddsCellProps {
-  bookmaker: Bookmaker;
+interface GridRow {
+  id: string;
   team: string;
-  market: string;
+  [bookmakerKey: string]: string | number | undefined;
 }
 
-const OddsCell: React.FC<OddsCellProps> = ({ bookmaker, team, market }) => {
-
-  const marketData = bookmaker.markets.find(m => m.key === market);
-  const outcome = marketData?.outcomes.find(o => o.name === team);
-
-  if (!outcome) return <td className="p-2 text-center">N/A</td>;
-
-  const odds = outcome.price;
-  
-  return (
-    <td className="p-2 text-center">
-      <div>{odds}</div>
-      {market === 'spreads' && outcome.point !== undefined && (
-        <div className="text-gray-400 text-sm">
-          {outcome.point > 0 ? '+' : ''}{outcome.point}
-        </div>
-      )}
-    </td>
-  );
-};
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#200589',
+    },
+  },
+});
 
 const MarketTable: React.FC<{
   details: MatchDetails;
@@ -67,88 +56,130 @@ const MarketTable: React.FC<{
   title: string;
 }> = ({ details, marketType, title }) => {
   const validBookmakers = details.bookmakers.filter(
-    bookmaker => bookmaker.markets.some(market => 
-      market.key === marketType && 
-      market.outcomes && 
-      market.outcomes.length > 0
-    )
+    bookmaker =>
+      bookmaker.markets.some(
+        market =>
+          market.key === marketType &&
+          market.outcomes &&
+          market.outcomes.length > 0
+      )
   );
 
   if (validBookmakers.length === 0) {
     return (
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-4">{title}</h2>
-        <p className="text-gray-500">No {title.toLowerCase()} odds available for this match.</p>
+        <p className="text-gray-500">
+          No {title.toLowerCase()} odds available for this match.
+        </p>
       </div>
     );
   }
 
+  function createRow(team: string): GridRow {
+    const row: GridRow = {
+      id: team,
+      team,
+    };
+
+    validBookmakers.forEach(bookmaker => {
+      const marketData = bookmaker.markets.find(m => m.key === marketType);
+      const outcome = marketData?.outcomes.find(o => o.name === team);
+      if (outcome) {
+        if (marketType === 'spreads' && outcome.point !== undefined) {
+          row[bookmaker.key] = `${outcome.price} (${
+            outcome.point > 0 ? '+' : ''
+          }${outcome.point})`;
+        } else {
+          row[bookmaker.key] = outcome.price > 0 ? `+${outcome.price}` : outcome.price;
+        }
+      } else {
+        row[bookmaker.key] = '-';
+      }
+    });
+
+    return row;
+  }
+
+  const rows: GridRow[] = [
+    createRow(details.home_team),
+    createRow(details.away_team),
+  ];
+
+  const columns = [
+    {
+      field: 'team',
+      headerName: 'Team',
+      width: 150,
+    },
+    ...validBookmakers.map(bookmaker => ({
+      field: bookmaker.key,
+      headerName: bookmaker.title,
+      width: 150,
+      renderCell: (params: GridRenderCellParams) => {
+        const value = params.value;
+        return <div>{value}</div>;
+      },
+    })),
+  ];
+
   return (
-    <div className="overflow-x-auto mb-8">
-      <h2 className="text-2xl font-bold mb-4">
-        {title}
-      </h2>
-      
-      <table className="min-w-full border-2 border-neon bg-temp">
-        <thead>
-          <tr>
-            <th className="p-2 border-b border-neon text-left sticky left-0 bg-temp">
-              Game
-            </th>
-            <th className="p-2 border-b border-neon text-left sticky left-[120px] bg-temp">
-              Team
-            </th>
-            {validBookmakers.map(bookmaker => (
-              <th key={bookmaker.key} className="p-2 border-b border-neon text-center">
-                {bookmaker.title}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr className="border-b border-neon">
-            <td rowSpan={2} className="p-2 text-left border-r-4 border-neon sticky left-0 bg-temp">
-              <div className="font-semibold text-sm text-gray-500">
-                {details.sport_title}
-              </div>
-              <div className="text-neon">
-                {details.home_team} vs {details.away_team}
-              </div>
-            </td>
-            <td className="p-2 sticky left-[120px] bg-temp">
-              {details.home_team}
-            </td>
-            {validBookmakers.map(bookmaker => (
-              <OddsCell
-                key={`${bookmaker.key}-home`}
-                bookmaker={bookmaker}
-                team={details.home_team}
-                market={marketType}
-              />
-            ))}
-          </tr>
-          <tr className="border-b-4 border-neon">
-            <td className="p-2 sticky left-[120px] bg-temp">
-              {details.away_team}
-            </td>
-            {validBookmakers.map(bookmaker => (
-              <OddsCell
-                key={`${bookmaker.key}-away`}
-                bookmaker={bookmaker}
-                team={details.away_team}
-                market={marketType}
-              />
-            ))}
-          </tr>
-        </tbody>
-      </table>
+    <div className="mb-8">
+      <h2 className="text-2xl font-bold mb-4">{title}</h2>
+      <div style={{ height: 200, width: '100%' }}>
+        <ThemeProvider theme={theme}>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            pageSizeOptions={[2]}
+            hideFooter
+            disableRowSelectionOnClick
+            sx={{
+              '& .MuiDataGrid-cell': {
+                borderRight: '1px solid #e0e0e0',
+                padding: '8px',
+              },
+              '& .MuiDataGrid-columnHeaders': {
+                borderBottom: '2px solid #200589',
+                backgroundColor: '#f8f8ff',
+                '& .MuiDataGrid-columnHeader': {
+                  borderRight: '2px solid #200589',
+                  borderTop: '2px solid #200589',
+                  '&:first-of-type': {
+                    borderLeft: '2px solid #200589',
+                  },
+                },
+              },
+              '& .MuiDataGrid-columnHeader': {
+                padding: '8px',
+                color: '#200589',
+                fontWeight: 'bold',
+                backgroundColor: '#f8f8ff',
+              },
+              '& .MuiDataGrid-pinnedColumns': {
+                backgroundColor: '#ffffff',
+                boxShadow: '2px 0 4px rgba(32, 5, 137, 0.1)',
+              },
+              '& .MuiDataGrid-columnSeparator': {
+                color: '#200589',
+              },
+              '& .MuiDataGrid-menuIcon': {
+                color: '#200589',
+              },
+              '& .MuiDataGrid-sortIcon': {
+                color: '#200589',
+              },
+            }}
+          />
+        </ThemeProvider>
+      </div>
     </div>
   );
 };
 
 const MatchDetailsPage = () => {
   const { sportKey, matchId } = useParams<{ sportKey: string; matchId: string }>();
-  
+
   const { data: matchDetails, isLoading, error } = useQuery({
     queryKey: ['matchDetails', sportKey, matchId],
     queryFn: async () => {
@@ -161,7 +192,7 @@ const MatchDetailsPage = () => {
         throw error;
       }
     },
-    enabled: !!sportKey && !!matchId
+    enabled: !!sportKey && !!matchId,
   });
 
   if (isLoading) {
@@ -188,29 +219,19 @@ const MatchDetailsPage = () => {
         <ArrowLeft size={20} />
         Back to all matches
       </Link>
-      
+
       <h1 className="text-4xl font-bold mb-6">
         {details.home_team} vs {details.away_team}
       </h1>
-      
+
       <div className="space-y-8">
-        <MarketTable 
-          details={details}
-          marketType="h2h"
-          title="Moneyline"
-        />
-        
-        <MarketTable 
-          details={details}
-          marketType="spreads"
-          title="Spread"
-        />
+        <MarketTable details={details} marketType="h2h" title="Moneyline" />
 
-        <PlayerProps 
-          sportKey={sportKey!}
-          matchId={matchId!}
-        />
+        <MarketTable details={details} marketType="spreads" title="Spread" />
 
+        {/*
+        <PlayerProps sportKey={sportKey!} matchId={matchId!} />
+        */}
       </div>
     </div>
   );

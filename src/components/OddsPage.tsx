@@ -125,6 +125,13 @@ const popularBookmakers: Bookmaker[] = [
   { key: 'betonlineag', title: 'BetOnline.ag' },
   { key: 'lowvig', title: 'LowVig.ag' },
   { key: 'bovada', title: 'Bovada' },
+  { key: 'ballybet', title: 'Bally Bet' },
+  { key: 'betanysports', title: 'BetAnySports' },
+  { key: 'betparx', title: 'betPARX' },
+  { key: 'espnbet', title: 'ESPN BET' },
+  { key: 'fliff', title: 'Fliff' },
+  { key: 'hardrockbet', title: 'Hard Rock Bet' },
+  { key: 'windcreek', title: 'Wind Creek (Betfred PA)' },
 ];
 
 const theme = createTheme({

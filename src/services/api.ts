@@ -73,7 +73,7 @@ export const fetchOdds = async (sport: string, market: string = 'h2h') => {
     const response = await axios.get(`${API_BASE_URL}/sports/${sport}/odds`, {
       params: {
         apiKey: API_KEY,
-        regions: 'us',
+        regions: 'us,us2',
         markets: market,
         oddsFormat: 'american'
       },
@@ -90,7 +90,7 @@ export const fetchMatchDetails = async (sport: string, matchId: string) => {
     const response = await axios.get(`${API_BASE_URL}/sports/${sport}/events/${matchId}/odds`, {
       params: {
         apiKey: API_KEY,
-        regions: 'us',
+        regions: 'us,us2',
         markets: ['h2h', 'spreads', 'totals', 'player_pass_tds', 'player_pass_yds', 'player_rush_yds', 'player_receptions'],
         oddsFormat: 'american'
       },
@@ -107,7 +107,7 @@ export const fetchBothMatchDetails = async (sport: string, matchId: string) => {
     const response = await axios.get(`${API_BASE_URL}/sports/${sport}/events/${matchId}/odds`, {
       params: {
         apiKey: API_KEY,
-        regions: 'us',
+        regions: 'us,us2',
         markets: 'h2h,spreads',
         oddsFormat: 'american'
       }
@@ -123,7 +123,7 @@ export const fetchPlayerProps = async (
   sport: string,
   matchId: string,
   markets: PlayerPropMarket[] = defaultMarkets,
-  region: string = 'us'
+  region: string = 'us,us2',
 ) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/sports/${sport}/events/${matchId}/odds`, {
