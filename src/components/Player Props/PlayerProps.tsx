@@ -83,12 +83,14 @@ const PlayerPropCell: React.FC<{
   );
 };
 
-const PlayerPropsTable: React.FC<{
+interface PlayerPropsTableProps {
   sportKey: string;
   matchId: string;
   propType: string;
-  markets: string[];
-}> = ({ sportKey, matchId, propType, markets }) => {
+  markets: readonly string[];
+}
+
+const PlayerPropsTable: React.FC<PlayerPropsTableProps> = ({ sportKey, matchId, propType, markets }) => {
   const { data, isLoading } = useQuery({
     queryKey: ['playerProps', sportKey, matchId, propType],
     queryFn: () => fetchPlayerProps(sportKey, matchId, markets as any[]),
@@ -101,9 +103,9 @@ const PlayerPropsTable: React.FC<{
   // Get unique players and their props
   const playerPropMap = new Map<string, Map<string, number>>();
   
-  data.bookmakers.forEach(bookmaker => {
-    bookmaker.markets.forEach(market => {
-      market.outcomes.forEach(outcome => {
+  data.bookmakers.forEach((bookmaker: PlayerPropBookmaker) => {
+    bookmaker.markets.forEach((market: PlayerPropMarket) => {
+      market.outcomes.forEach((outcome: PlayerPropOutcome) => {
         if (!playerPropMap.has(outcome.description)) {
           playerPropMap.set(outcome.description, new Map());
         }
@@ -127,7 +129,7 @@ const PlayerPropsTable: React.FC<{
               <th className="p-2 border-b border-neon text-left sticky left-0 bg-temp">Player</th>
               <th className="p-2 border-b border-neon text-left sticky left-[150px] bg-temp">Prop</th>
               <th className="p-2 border-b border-neon text-center sticky left-[300px] bg-temp">Line</th>
-              {data.bookmakers.map(bookmaker => (
+              {data.bookmakers.map((bookmaker: PlayerPropBookmaker) => (
                 <th key={bookmaker.key} className="p-2 border-b border-neon text-center" colSpan={2}>
                   {bookmaker.title}
                   <div className="grid grid-cols-2 text-sm mt-1">
@@ -147,7 +149,7 @@ const PlayerPropsTable: React.FC<{
                   <td className="p-2 text-center sticky left-[300px] bg-temp">
                     {line}
                   </td>
-                  {data.bookmakers.map(bookmaker => (
+                  {data.bookmakers.map((bookmaker: PlayerPropBookmaker) => (
                     <PlayerPropCell
                       key={bookmaker.key}
                       bookmaker={bookmaker}
