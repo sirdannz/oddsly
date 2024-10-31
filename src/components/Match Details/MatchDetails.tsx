@@ -12,6 +12,11 @@ import {
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { TextField, Switch, FormControlLabel } from '@mui/material';
 
+interface MatchDetailsPageProps {
+  bankroll: number;
+  setBankroll: (value: number) => void;
+}
+
 // Odds Calculation Functions
 
 const americanToDecimal = (americanOdds: number): number => {
@@ -343,11 +348,13 @@ const MarketTable: React.FC<{
   return (
     <div className="mb-8">
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
-      <div style={{ height: 200, width: '100%' }}>
+      <div style={{ width: '100%' }}>
         <ThemeProvider theme={theme}>
           <DataGrid
             rows={filteredRows}
             columns={columns}
+            getRowHeight={() => 'auto'}
+            getEstimatedRowHeight={() => 200}
             pageSizeOptions={[2]}
             hideFooter
             disableRowSelectionOnClick
@@ -355,6 +362,9 @@ const MarketTable: React.FC<{
               '& .MuiDataGrid-cell': {
                 borderRight: '1px solid #e0e0e0',
                 padding: '8px',
+                '&[data-field="matchInfo"]': {
+                  backgroundColor: '#f8f8ff',
+                }
               },
               '& .MuiDataGrid-columnHeaders': {
                 borderBottom: '2px solid #200589',
@@ -396,10 +406,9 @@ const MarketTable: React.FC<{
 
 // MatchDetailsPage Component
 
-const MatchDetailsPage = () => {
+const MatchDetailsPage: React.FC<MatchDetailsPageProps> = ({ bankroll, setBankroll }) => {
   const { sportKey, matchId } = useParams<{ sportKey: string; matchId: string }>();
 
-  const [bankroll, setBankroll] = useState(10000);
   const [showOnlyKellyBets, setShowOnlyKellyBets] = useState<boolean>(false);
 
   const { data: matchDetails, isLoading, error } = useQuery({

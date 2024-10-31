@@ -11,6 +11,10 @@ import { fetchOdds } from '../services/api';
 import { TextField, Button, Switch, FormControlLabel } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+interface OddsPageProps {
+  bankroll: number;
+  setBankroll: (value: number) => void;
+}
 
 interface Sport {
   key: string;
@@ -464,7 +468,7 @@ const OddsDataGrid: React.FC<OddsDataGridProps> = ({
   }, [selectedMarket, selectedBooks, bankroll, popularBookmakers]);
 
   return (
-    <div style={{ height: 'calc(100vh - 300px)', width: '100%' }}>
+    <div style={{ height: 'calc(95vh)', width: '100%' }}>
       <DataGrid
         rows={rows}
         columns={columns}
@@ -528,14 +532,13 @@ const OddsDataGrid: React.FC<OddsDataGridProps> = ({
   );
 };
 
-const OddsPage: React.FC = () => {
+const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedSoccerLeague, setSelectedSoccerLeague] = useState<string | null>(null);
   const [selectedMarket, setSelectedMarket] = useState<string>('h2h');
   const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set(popularBookmakers.map(b => b.key)));
   const [showSoccerLeagues, setShowSoccerLeagues] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [bankroll, setBankroll] = useState(10000);
   const [showOnlyKellyBets, setShowOnlyKellyBets] = useState<boolean>(false); // New state for Kelly Bets toggle
 
   
