@@ -74,7 +74,7 @@ interface GridRow {
   matchName: string;
   team: string;
   estimatedProbability: number;
-  [bookmakerKey: string]: BookmakerCellData | string | number | undefined; // Add this line
+  [bookmakerKey: string]: BookmakerCellData | string | number | undefined;
 }
 
 interface BankrollInputProps {
@@ -90,6 +90,7 @@ interface OddsDataGridProps {
   popularBookmakers: Bookmaker[];
   ALL_SPORTS: Sport[];
   showOnlyKellyBets: boolean;
+  evFilterThreshold: number;
 }
 
 const MAIN_SPORTS: Sport[] = [
@@ -241,7 +242,8 @@ const OddsDataGrid: React.FC<OddsDataGridProps> = ({
   bankroll,
   popularBookmakers,
   ALL_SPORTS,
-  showOnlyKellyBets
+  showOnlyKellyBets,
+  evFilterThreshold
 }) => {
   const rows: GridRow[] = useMemo(() => {
     const allRows = matches.flatMap((match: Match, index: number) => {
@@ -360,8 +362,21 @@ const OddsDataGrid: React.FC<OddsDataGridProps> = ({
       });
     }
 
-    return allRows;
-  }, [matches, selectedMarket, selectedBooks, bankroll, showOnlyKellyBets]);
+    return allRows.filter(row => {
+      const bookmakerKeys = Array.from(selectedBooks);
+  
+      return bookmakerKeys.some(key => {
+        const data = getBookmakerData(row, key);
+        if (data) {
+          const evPercent = data.probDifference * 100;
+          const meetsEvThreshold = evPercent >= evFilterThreshold;
+          const meetsKellyBets = !showOnlyKellyBets || (data.kellyFraction !== undefined && data.kellyFraction > 0);
+          return meetsEvThreshold && meetsKellyBets;
+        }
+        return false;
+      });
+    });
+  }, [matches, selectedMarket, selectedBooks, bankroll, showOnlyKellyBets, evFilterThreshold]);
 
   const columns = useMemo(() => {
     const baseColumns = [
@@ -539,7 +554,9 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
   const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set(popularBookmakers.map(b => b.key)));
   const [showSoccerLeagues, setShowSoccerLeagues] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [showOnlyKellyBets, setShowOnlyKellyBets] = useState<boolean>(false); // New state for Kelly Bets toggle
+  const [showOnlyKellyBets, setShowOnlyKellyBets] = useState<boolean>(false);
+  const [evFilterThreshold, setEvFilterThreshold] = useState<number>(0);
+
 
   
 
@@ -552,7 +569,7 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
   const fixedTableRowRefs = useRef<{ [key: string]: HTMLTableRowElement | null }>({});
   const scrollableTableRowRefs = useRef<{ [key: string]: HTMLTableRowElement | null }>({});
 
-  const handleToggleKellyBets = () => setShowOnlyKellyBets((prev) => !prev); // Toggle function for Kelly Bets
+  const handleToggleKellyBets = () => setShowOnlyKellyBets((prev) => !prev);
 
 
   const sportsQueries = useQueries({
@@ -734,12 +751,43 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
       </div>
 
       {/* Kelly Bets Toggle */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-          <FormControlLabel
-            control={<Switch checked={showOnlyKellyBets} onChange={handleToggleKellyBets} color="primary" />}
-            label="Show Only Kelly Bets"
-          />
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+        <FormControlLabel
+          control={<Switch checked={showOnlyKellyBets} onChange={handleToggleKellyBets} color="primary" />}
+          label="Show Only Kelly Bets"
+        />
+      </div>
+
+      {/* EV% Filter */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+        <TextField
+          label="Minimum EV%"
+          variant="outlined"
+          type="number"
+          value={evFilterThreshold}
+          onChange={(e) => {
+            const value = parseFloat(e.target.value);
+            if (!isNaN(value)) {
+              setEvFilterThreshold(value);
+            } else {
+              setEvFilterThreshold(0);
+            }
+          }}          InputProps={{
+            endAdornment: <span>%</span>,
+          }}
+          sx={{
+            width: '200px',
+            '& .MuiOutlinedInput-root': {
+              '&:hover fieldset': {
+                borderColor: '#200589',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#200589',
+              },
+            },
+          }}
+        />
+      </div>
 
       {/* Sports List */}
       <div
@@ -771,6 +819,7 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
               {sport.title}
             </Button>
           ))}
+          {/*}
           <Button
             onClick={() => handleSportClick('soccer')}
             style={{
@@ -781,6 +830,7 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
           >
             Soccer
           </Button>
+          */}
         </div>
       </div>
 
@@ -874,6 +924,7 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
           popularBookmakers={popularBookmakers}
           ALL_SPORTS={ALL_SPORTS}
           showOnlyKellyBets={showOnlyKellyBets}
+          evFilterThreshold={evFilterThreshold}
         />
       )}
         
