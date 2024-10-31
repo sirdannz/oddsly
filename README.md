@@ -3,19 +3,32 @@
 
 A web application for comparing betting odds across multiple sportsbooks to help users find the best value bets. This app leverages various formulas, data aggregation from APIs, and React components to create an interactive interface with real-time data.
 
+## Tech Stack
+
+### Front end
+- [x] **Vite**
+- [x] **React**
+- [x] **TypeScript**
+- [x] **TailwindCSS**
+
+### Backend
+- [x] **Node.js**
+
+### Tools and Libraries
+- [x] **ESLint**
+- [x] **MaterialUI**
+- [x] **APIs**:
+  - [The Odds API](https://the-odds-api.com/): For fetching odds data
+  - Additional data from Express server with Axios for API requests
+- [x] **Axios**:
+- [x] **dotenv**
+
 ## Features
 - Aggregated betting odds across multiple sportsbooks
 - Market and bookmaker filters
 - Kelly Criterion recommended bets based on bankroll input
 - Comprehensive player prop markets and specific match details
 - Toggle feature to display only Kelly-recommended bets
-
-## Tech Stack
-- **Frontend**: React, TypeScript, Material UI, TailwindCSS
-- **APIs**:
-  - [The Odds API](https://the-odds-api.com/): For fetching odds data
-  - Additional data from Express server with Axios for API requests
-- **Utilities**: Vite for frontend bundling, axios for HTTP requests, dotenv for environment management
 
 ## Installation
 1. Clone this repository:
