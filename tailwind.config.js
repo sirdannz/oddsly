@@ -8,6 +8,7 @@ export default {
     extend: {
       colors: {
         neon: '#200589',
+        neonhover: '#fff',
         bgcolor: '#fff',
         temp: '#fff'
       },

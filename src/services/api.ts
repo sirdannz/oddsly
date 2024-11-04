@@ -3,6 +3,8 @@ import axios from 'axios';
 const API_BASE_URL = 'https://api.the-odds-api.com/v4';
 const API_KEY = import.meta.env.VITE_ODDS_API_KEY;
 
+const SUPPORTED_PLAYER_PROP_SPORTS = ['americanfootball_nfl', 'americanfootball_ncaaf', 'baseball_mlb', 'basketball_nba', 'icehockey_nhl', 'mma_mixed_martial_arts', 'tennis_atp_french_open', 'tennis_wta_french_open'];
+
 // Define all available player prop markets
 const PLAYER_PROP_MARKETS = [
   'player_assists',
@@ -69,6 +71,10 @@ export const fetchBookmakers = async () => {
 };
 
 export const fetchOdds = async (sport: string, market: string = 'h2h') => {
+  if (!SUPPORTED_PLAYER_PROP_SPORTS.includes(sport)) {
+    console.warn(`fetchOdds not supported for: ${sport}`);
+    return [];
+  }
   try {
     const response = await axios.get(`${API_BASE_URL}/sports/${sport}/odds`, {
       params: {
@@ -86,6 +92,10 @@ export const fetchOdds = async (sport: string, market: string = 'h2h') => {
 };
 
 export const fetchMatchDetails = async (sport: string, matchId: string) => {
+  if (!SUPPORTED_PLAYER_PROP_SPORTS.includes(sport)) {
+    console.warn(`fetchMatchDetails not supported for: ${sport}`);
+    return [];
+  }
   try {
     const response = await axios.get(`${API_BASE_URL}/sports/${sport}/events/${matchId}/odds`, {
       params: {
@@ -103,6 +113,10 @@ export const fetchMatchDetails = async (sport: string, matchId: string) => {
 };
 
 export const fetchBothMatchDetails = async (sport: string, matchId: string) => {
+  if (!SUPPORTED_PLAYER_PROP_SPORTS.includes(sport)) {
+    console.warn(`fetchBothMatchDetails not supported for: ${sport}`);
+    return [];
+  }
   try {
     const response = await axios.get(`${API_BASE_URL}/sports/${sport}/events/${matchId}/odds`, {
       params: {
@@ -125,6 +139,10 @@ export const fetchPlayerProps = async (
   markets: PlayerPropMarket[] = defaultMarkets,
   region: string = 'us,us2',
 ) => {
+  if (!SUPPORTED_PLAYER_PROP_SPORTS.includes(sport)) {
+    console.warn(`fetchPlayerProps not supported for: ${sport}`);
+    return [];
+  }
   try {
     const response = await axios.get(`${API_BASE_URL}/sports/${sport}/events/${matchId}/odds`, {
       params: {
