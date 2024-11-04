@@ -4,11 +4,13 @@ import Logout from '../Account/Logout';
 import { Link } from 'react-router-dom';
 import useAuth from '../../authorization/useAuth'; // Import the authentication hook
 
+/*
 interface HeaderProps {
   toggleNavbar: () => void;
 }
+  */
 
-const Header: React.FC<HeaderProps> = () => {
+const Header: React.FC/*<HeaderProps>*/ = () => {
   const { user } = useAuth();
 
 
