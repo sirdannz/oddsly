@@ -1,10 +1,21 @@
+/* ++++++++++ IMPORTS ++++++++++ */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
+
+/* ++++++++++ AUTHORIZATION ++++++++++ */
+import { AuthProvider } from './authorization/AuthContext'
+
+/* ++++++++++ ALL CONTENT ++++++++++ */
 import App from './App.tsx'
 
+/* ++++++++++ STYLES ++++++++++ */
+import './index.css'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+    
   </StrictMode>,
 )

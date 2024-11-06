@@ -1,11 +1,21 @@
+/* ++++++++++ IMPORTS ++++++++++ */
+import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useState } from 'react';
-import Header from './components/Header/Header'
+
+/* ++++++++++ HEADER ++++++++++ */
+import Header from './components/Header/Header';
+
+/* ++++++++++ MAIN CONTENT ++++++++++ */
 import OddsPage from './components/OddsPage';
 import MatchDetailsPage from './components/Match Details/MatchDetails';
+
+/* ++++++++++ AUTHORIZATION / LOGIN ++++++++++ */
 import useAuth from "./authorization/useAuth";
 import Login from "./components/Account/Login";
+import RingLoader from 'react-spinners/RingLoader'
+
+/* ++++++++++ STYLES ++++++++++ */
 import './App.css';
 
 const queryClient = new QueryClient();
@@ -15,47 +25,52 @@ function App() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <RingLoader />
+      </div>
+    );
   }
 
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <div className="min-h-screen p-4">
+          {/* Render Header only if user is authenticated */}
           <Header />
-          <Routes>
-            {/* If the user is not authenticated, redirect to Login */}
-            <Route
-              path="/login"
-              element={user ? <Navigate to="/" replace /> : <Login />}
-            />
 
-            {/* Protected routes: Only accessible if authenticated */}
+          <Routes>
+            {/* Redirect logged-in users from the login page to the home page */}
+            <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+
+            {/* Define a PrivateRoute wrapper for protected routes */}
             <Route
               path="/"
               element={
-                user ? (
+                <PrivateRoute user={user}>
                   <OddsPage bankroll={bankroll} setBankroll={setBankroll} />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
+                </PrivateRoute>
               }
             />
             <Route
               path="/match/:sportKey/:matchId"
               element={
-                user ? (
+                <PrivateRoute user={user}>
                   <MatchDetailsPage bankroll={bankroll} setBankroll={setBankroll} />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
+                </PrivateRoute>
               }
             />
           </Routes>
         </div>
-      </BrowserRouter>
+      </BrowserRouter>``
     </QueryClientProvider>
   );
+}
+
+/* ++++++++++ PRIVATE ROUTE ++++++++++ */
+// PrivateRoute Component to handle protected routes
+function PrivateRoute({ user, children }: { user: any; children: JSX.Element }) { // Add user prop
+  return user ? children : <Navigate to="/login" replace />; // Redirect to login if user is not authenticated
 }
 
 export default App;

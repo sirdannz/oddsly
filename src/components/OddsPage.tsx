@@ -1,16 +1,24 @@
+
+/* ++++++++++ IMPORTS ++++++++++ */
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { Search, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+/* ++++++++++ MATERIAL UI ++++++++++ */
 import { 
   DataGrid, 
   GridRenderCellParams,
   GridCellParams,
 } from '@mui/x-data-grid';
-import { fetchOdds } from '../services/api';
 import { TextField, Button, Switch, FormControlLabel } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+/* ++++++++++ SERVICES ++++++++++ */
+import { fetchOdds } from '../services/api';
+
+
+/* ++++++++++ TYPES ++++++++++ */
 interface OddsPageProps {
   bankroll: number;
   setBankroll: (value: number) => void;
@@ -93,6 +101,7 @@ interface OddsDataGridProps {
   evFilterThreshold: number;
 }
 
+/* ++++++++++ CONSTANTS ++++++++++ */
 const MAIN_SPORTS: Sport[] = [
   { key: 'americanfootball_nfl', title: 'NFL' },
   { key: 'americanfootball_ncaaf', title: 'NCAAF' },
@@ -139,6 +148,7 @@ const popularBookmakers: Bookmaker[] = [
   { key: 'windcreek', title: 'Wind Creek (Betfred PA)' },
 ];
 
+/* ++++++++++ MATERIAL UI THEME ++++++++++ */
 const theme = createTheme({
   palette: {
     primary: {
@@ -167,8 +177,7 @@ const theme = createTheme({
 });
 
 
-// KELLY CRITERION //
-
+/* ++++++++++ UTILITIES ++++++++++ */
 const americanToDecimal = (americanOdds: number): number => {
   if (americanOdds > 0) {
     return (americanOdds / 100) + 1;
@@ -200,7 +209,7 @@ const calculateKellyCriterion = (
   return Math.max(0, Math.min(kelly, 0.25));
 };
 
-
+/* ++++++++++ COMPONENTS ++++++++++ */
 const BankrollInput: React.FC<BankrollInputProps> = ({ bankroll, setBankroll }) => {
   const [inputValue, setInputValue] = useState(bankroll.toString());
 
@@ -235,6 +244,7 @@ const BankrollInput: React.FC<BankrollInputProps> = ({ bankroll, setBankroll }) 
   );
 };
 
+/* ++++++++++ ODDS DATA GRID ++++++++++ */
 const OddsDataGrid: React.FC<OddsDataGridProps> = ({
   matches,
   selectedMarket,
@@ -288,6 +298,7 @@ const OddsDataGrid: React.FC<OddsDataGridProps> = ({
 
       const { homeProb, awayProb } = calculateTeamProbabilities(match.home_team, match.away_team);
 
+      /* ++++++++++ CREATE BOOKMAKER DATA ++++++++++ */
       const createBookmakerData = (team: string, estimatedProb: number): Record<string, BookmakerCellData> => {
         const bookmakerData: Record<string, BookmakerCellData> = {};
         
@@ -378,6 +389,7 @@ const OddsDataGrid: React.FC<OddsDataGridProps> = ({
     });
   }, [matches, selectedMarket, selectedBooks, bankroll, showOnlyKellyBets, evFilterThreshold]);
 
+  // Create columns for the DataGrid
   const columns = useMemo(() => {
     const baseColumns = [
       {
@@ -482,6 +494,7 @@ const OddsDataGrid: React.FC<OddsDataGridProps> = ({
     return [...baseColumns, ...bookmakerColumns];
   }, [selectedMarket, selectedBooks, bankroll, popularBookmakers]);
 
+  // Render the DataGrid
   return (
     <div style={{ height: 'calc(95vh)', width: '100%' }}>
       <DataGrid
@@ -547,7 +560,9 @@ const OddsDataGrid: React.FC<OddsDataGridProps> = ({
   );
 };
 
+/* ++++++++++ ODDS PAGE ++++++++++ */
 const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
+  /* ++++++++++ STATE ++++++++++ */
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedSoccerLeague, setSelectedSoccerLeague] = useState<string | null>(null);
   const [selectedMarket, setSelectedMarket] = useState<string>('h2h');
@@ -557,21 +572,18 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
   const [showOnlyKellyBets, setShowOnlyKellyBets] = useState<boolean>(false);
   const [evFilterThreshold, setEvFilterThreshold] = useState<number>(0);
 
-
-  
-
-
+  /* ++++++++++ REFS ++++++++++ */
   const fixedTableRef = useRef<HTMLDivElement>(null);
   const scrollableTableRef = useRef<HTMLDivElement>(null);
   const isUserScrolling = useRef(false);
 
-
+  /* ++++++++++ USE QUERIES ++++++++++ */
   const fixedTableRowRefs = useRef<{ [key: string]: HTMLTableRowElement | null }>({});
   const scrollableTableRowRefs = useRef<{ [key: string]: HTMLTableRowElement | null }>({});
 
   const handleToggleKellyBets = () => setShowOnlyKellyBets((prev) => !prev);
 
-
+  /* ++++++++++ QUERIES ++++++++++ */
   const sportsQueries = useQueries({
     queries: ALL_SPORTS.map(sport => ({
       queryKey: ['odds', sport.key, selectedMarket, Array.from(selectedBooks)],
@@ -591,6 +603,7 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
     .filter(query => query.data)
     .flatMap(query => query.data ?? []);
 
+  /* ++++++++++ HANDLERS ++++++++++ */
   const handleSportClick = (sportKey: string) => {
     if (sportKey === 'soccer') {
       setShowSoccerLeagues(true);
@@ -642,6 +655,7 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
   const isAllSelected = selectedBooks.size === popularBookmakers.length;
   const filteredMatches = filterMatches(allOdds);
 
+  /* ++++++++++ ROW HEIGHT SYNC ++++++++++ */
   useEffect(() => {
     const syncRowHeights = () => {
       Object.keys(fixedTableRowRefs.current).forEach((key) => {
@@ -682,6 +696,7 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
     };
   }, [filteredMatches, selectedMarket, bankroll]);
 
+  /* ++++++++++ SCROLL SYNC ++++++++++ */
   useEffect(() => {
     const fixedTable = fixedTableRef.current;
     const scrollableTable = scrollableTableRef.current;
@@ -710,6 +725,7 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
     };
   }, []);
 
+  /* ++++++++++ RENDER ++++++++++ */
   return (
     <ThemeProvider theme={theme}>
       <div className="mt-4 text-black">

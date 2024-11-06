@@ -1,27 +1,67 @@
-import { auth } from '../../firebaseConfig';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  sendEmailVerification, 
-  signOut as firebaseSignOut 
-} from "firebase/auth";
+/* ++++++++++++++++++++ AUTHENTICATION SERVICE ++++++++++++++++++++ */
+const API_BASE_URL = 'https://oddsly-backend-three.vercel.app/api';
 
-export const signUp = async (email: string, password: string) => {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  if (userCredential.user) {
-    await sendEmailVerification(userCredential.user); // Send verification email
+/* ++++++++++ SIGN UP ++++++++++ */
+export const signUp = async (
+  email: string,
+  password: string,
+  additionalData?: { fullName: string; dateOfBirth: string }
+) => {
+  const response = await fetch(`${API_BASE_URL}/signup`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ email, password, ...additionalData }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Failed to sign up");
   }
+
+  return data;
 };
 
+
+/* ++++++++++ SIGN IN ++++++++++ */
 export const signIn = async (email: string, password: string) => {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  const response = await fetch(`${API_BASE_URL}/signin`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({ email, password })
+  });
 
-  // Check if the user's email is verified
-  if (userCredential.user && !userCredential.user.emailVerified) {
-    throw new Error("Please verify your email before logging in.");
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to sign in');
   }
+
+  return data;
 };
 
+/* ++++++++++ SIGN OUT ++++++++++ */
 export const signOut = async () => {
-  await firebaseSignOut(auth);
+  const response = await fetch(`${API_BASE_URL}/signout`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Accept': 'application/json',
+    }
+  });
+
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to sign out');
+  }
+
+  return data;
 };

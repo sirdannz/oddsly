@@ -1,9 +1,15 @@
+/* ++++++++++ IMPORTS ++++++++++ */
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchPlayerProps } from '../../services/api';
+
+/* ++++++++++ MATERIAL-UI ++++++++++ */
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+/* ++++++++++ SERVICES ++++++++++ */
+import { fetchPlayerProps } from '../../services/api';
+
+/* ++++++++++ TYPES ++++++++++ */
 interface PlayerPropOutcome {
   name: string;
   description: string;
@@ -23,6 +29,7 @@ interface PlayerPropBookmaker {
   markets: PlayerPropMarket[];
 }
 
+/* ++++++++++ CONSTANTS ++++++++++ */
 const PROP_TYPE_GROUPS = {
   'Passing': [
     'player_pass_tds',
@@ -86,6 +93,7 @@ interface GridRow {
   [bookmakerKey: string]: any;
 }
 
+/* ++++++++++ MUI THEME ++++++++++ */
 const theme = createTheme({
   palette: {
     primary: {
@@ -155,6 +163,7 @@ const PlayerPropsTable: React.FC<PlayerPropsTableProps> = ({
     },
   ];
 
+  // Add bookmaker columns
   data.bookmakers.forEach((bookmaker: PlayerPropBookmaker) => {
     columns.push(
       {
@@ -204,6 +213,7 @@ const PlayerPropsTable: React.FC<PlayerPropsTableProps> = ({
     });
   });
 
+  /* ++++++++++ RETURN GRID ++++++++++ */
   return (
     <div className="mb-8">
       <h2 className="text-2xl font-bold mb-4">{propType} Props</h2>
@@ -257,13 +267,15 @@ const PlayerPropsTable: React.FC<PlayerPropsTableProps> = ({
   );
 };
 
+/* ++++++++++ RENDER ++++++++++ */
 export const PlayerProps: React.FC<{
   sportKey: string;
   matchId: string;
 }> = ({ sportKey, matchId }) => {
   return (
+    // Render a table for each prop type group
     <div className="space-y-8">
-      {Object.entries(PROP_TYPE_GROUPS).map(([groupName, markets]) => (
+      {Object.entries(PROP_TYPE_GROUPS).map(([groupName, markets]) => ( //
         <PlayerPropsTable
           key={groupName}
           sportKey={sportKey}
