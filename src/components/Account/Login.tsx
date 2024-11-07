@@ -7,7 +7,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import { Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 
 /* ++++++++++ AUTHORIZATION / LOGIN ++++++++++ */
-import { signIn, signUp } from '../../authorization/AuthService';
+import { signIn, signUp, forgotPassword } from '../../authorization/AuthService';
 import useAuth from '../../authorization/useAuth';
 
 const Login = () => {
@@ -15,6 +15,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
@@ -77,6 +78,33 @@ const Login = () => {
     const age = calculateAge(new Date(dob));
     return age >= 18;
   };
+
+  // Password Reset
+  const handlePasswordReset = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    setInfo(null);
+  
+    try {
+      if (!email) {
+        setError('Please enter your email address.');
+        setIsLoading(false);
+        return;
+      }
+  
+      await forgotPassword(email);
+      setInfo('Password reset email sent. Please check your inbox.');
+      setIsResettingPassword(false);
+      resetForm();
+    } catch (error) {
+      console.error('Password reset error:', error);
+      setError((error as any).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
 
   // Validate all fields on change
   useEffect(() => {
@@ -141,15 +169,18 @@ const Login = () => {
     }
   };
 
-  /* ++++++++++ FUNCTIONS ++++++++++ */
+  // Resert form
   const resetForm = () => {
-    setPassword("");
-    setConfirmPassword("");
-    setFullName("");
-    setDateOfBirth("");
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setFullName('');
+    setDateOfBirth('');
     setAgreeToTerms(false);
     setError(null);
+    setInfo(null);
   };
+  
 
   // Get input class name
   const getInputClassName = (isValid: boolean, value: string, isSigningUp: boolean) => `
@@ -173,21 +204,28 @@ const Login = () => {
   //
   return (
     <div className="flex flex-col min-h-[50vh] items-center p-8 bg-white">
-      <h2 className="text-6xl font-black mb-8 transition-all duration-300">
-        {isSigningUp ? "Sign Up" : "Login"}
-      </h2>
+    <h2 className="text-6xl font-black mb-8 transition-all duration-300">
+      {isSigningUp
+        ? 'Sign Up'
+        : isResettingPassword
+        ? 'Reset Password'
+        : 'Login'}
+    </h2>
 
       {error && (
         <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg transition-all duration-300">
           {error}
         </div>
       )}
+
       {info && (
         <div className="mb-4 p-3 bg-blue-100 text-blue-700 rounded-lg transition-all duration-300">
           {info}
         </div>
       )}
 
+      {/* Login and Sign Up Forms */}
+      {!isResettingPassword && (
       <form onSubmit={handleAuth} className="w-full max-w-md space-y-6">
         <div className="space-y-6 transition-all duration-300">
           {isSigningUp && (
@@ -339,14 +377,12 @@ const Login = () => {
             </div>
           )}
 
-          {isSigningUp && (
-            <div className="flex justify-center mt-4">
-              <ReCAPTCHA
-                sitekey={SITE_KEY}
-                onChange={() => setCaptchaVerified(true)}
-              />
-            </div>
-          )}
+          <div className="flex justify-center mt-4">
+            <ReCAPTCHA
+              sitekey={SITE_KEY}
+              onChange={() => setCaptchaVerified(true)}
+            />
+          </div>
 
         </div>
 
@@ -365,19 +401,93 @@ const Login = () => {
           {isLoading ? "Loading..." : isSigningUp ? "Sign Up" : "Login"}
         </button>
       </form>
+      )}
 
+      {/* Password Reset Form */}
+    {isResettingPassword && (
+      <form
+        onSubmit={handlePasswordReset}
+        className="w-full max-w-md space-y-6"
+      >
+        <div className="space-y-6 transition-all duration-300">
+          <div className="space-y-2">
+            <input
+              type="email"
+              placeholder="Enter your email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={getInputClassName(
+                validations.email,
+                email,
+                isSigningUp
+              )}
+              required
+            />
+            {email && validations.email === false && (
+              <p className="text-sm text-red-500">
+                Please enter a valid email
+              </p>
+            )}
+          </div>
+        </div>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={`
+            w-full py-3 rounded-lg
+            bg-neon text-white font-medium
+            transform transition-all duration-300
+            hover:bg-opacity-90 hover:scale-[1.02]
+            disabled:opacity-50 disabled:cursor-not-allowed
+            disabled:hover:scale-100
+          `}
+        >
+          {isLoading ? 'Loading...' : 'Send Password Reset Email'}
+        </button>
+      </form>
+    )}
+
+    {/* Navigation Links */}
+    {!isResettingPassword && (
+      <>
+        <button
+          onClick={() => {
+            setIsSigningUp(!isSigningUp);
+            resetForm();
+          }}
+          disabled={isLoading}
+          className="mt-6 text-neon hover:underline transition-all duration-300"
+        >
+          {isSigningUp ? 'Have an account? Login' : 'New here? Sign Up'}
+        </button>
+
+        <button
+          onClick={() => {
+            setIsResettingPassword(true);
+            resetForm();
+          }}
+          disabled={isLoading}
+          className="mt-2 text-neon hover:underline transition-all duration-300"
+        >
+          Forgot Password?
+        </button>
+      </>
+    )}
+
+    {isResettingPassword && (
       <button
         onClick={() => {
-          setIsSigningUp(!isSigningUp);
+          setIsResettingPassword(false);
           resetForm();
         }}
         disabled={isLoading}
         className="mt-6 text-neon hover:underline transition-all duration-300"
       >
-        {isSigningUp ? "Have an account? Login" : "New here? Sign Up"}
+        Back to Login
       </button>
-    </div>
-  );
+    )}
+  </div>
+);
 };
 
 export default Login;
