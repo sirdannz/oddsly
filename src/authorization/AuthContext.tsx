@@ -6,11 +6,16 @@ import React, {
   useCallback } 
   from 'react';
 
+import { getUserProfile } from './AuthService';
+
+
 /* ++++++++++ TYPES ++++++++++ */
 interface User {
   uid: string;
   email: string;
   email_verified: boolean;
+  fullName?: string;
+
 }
 
 interface AuthState {
@@ -58,14 +63,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      setAuthState({ // Set user data
-        user: data.user,
+      const profile = await getUserProfile();
+
+      setAuthState({
+        user: { ...data.user, fullName: profile.fullName },
         loading: false,
         error: null,
       });
     } catch (error) {
       console.error('Auth check error:', error);
-      setAuthState({ // Set error state
+      setAuthState({
         user: null,
         loading: false,
         error: error instanceof Error ? error.message : 'Authentication failed',

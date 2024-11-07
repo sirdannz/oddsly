@@ -85,3 +85,43 @@ export const forgotPassword = async (email: string) => {
 
   return data;
 };
+
+/* ++++++++++ GET USER PROFILE ++++++++++ */
+export const getUserProfile = async () => {
+  const response = await fetch(`${API_BASE_URL}/userProfile`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to fetch user profile');
+  }
+
+  return data.profile;
+};
+
+/* ++++++++++ UPDATE USER PROFILE ++++++++++ */
+export const updateUserProfile = async (profileData: any) => {
+  const response = await fetch(`${API_BASE_URL}/userProfile`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(profileData),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to update user profile');
+  }
+
+  return data;
+};
