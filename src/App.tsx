@@ -15,6 +15,10 @@ import useAuth from "./authorization/useAuth";
 import Login from "./components/Account/Login";
 import RingLoader from 'react-spinners/RingLoader'
 
+/* ++++++++++ LEGAL ++++++++++ */
+import TermsPage from './components/Legal/TermsPage';
+import PrivacyPolicyPage from './components/Legal/PrivacyPolicyPage';
+
 /* ++++++++++ STYLES ++++++++++ */
 import './App.css';
 
@@ -62,6 +66,11 @@ function App() {
                 </PrivateRoute>
               }
             />
+
+            {/* Legal pages */}
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+
           </Routes>
         </div>
       </BrowserRouter>``
