@@ -26,9 +26,11 @@ function App() {
 
   if (loading) {
     return (
+
       <div className="flex items-center justify-center min-h-screen">
-        <RingLoader />
+        <RingLoader size={300} color='#200589' speedMultiplier={1.25}/>
       </div>
+
     );
   }
 
@@ -36,7 +38,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <div className="min-h-screen p-4">
-          {/* Render Header only if user is authenticated */}
+
           <Header />
 
           <Routes>

@@ -1,220 +1,345 @@
-/* ++++++++++ IMPORTS ++++++++++ */
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+/* ++++++++++ LIBRARIES ++++++++++ */
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-/* ++++++++++ AUTHORIZATION ++++++++++ */
-import { signIn, signUp } from "../../authorization/AuthService";
-import useAuth from "../../authorization/useAuth";
+/* ++++++++++ ICONS ++++++++++ */
+import { Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
+
+/* ++++++++++ AUTHORIZATION / LOGIN ++++++++++ */
+import { signIn, signUp } from '../../authorization/AuthService';
+import useAuth from '../../authorization/useAuth';
 
 const Login = () => {
   /* ++++++++++ STATES ++++++++++ */
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState(""); // New state for confirm password
-  const [fullName, setFullName] = useState(""); // State for full name
-  const [dateOfBirth, setDateOfBirth] = useState(""); // State for date of birth
-  const [agreeToTerms, setAgreeToTerms] = useState(false); // State for terms agreement
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordValidations, setPasswordValidations] = useState({
+    hasLength: false,
+    hasCapital: false,
+    hasNumber: false,
+    hasSpecial: false,
+  });
+  
+  const [validations, setValidations] = useState({
+    email: false,
+    password: false,
+    confirmPassword: false,
+    fullName: false,
+    dateOfBirth: false
+  });
+
   const navigate = useNavigate();
   const { refreshAuth } = useAuth();
 
-  const handleAuth = async (event?: React.FormEvent) => {
+  // Validate password on change
+  useEffect(() => {
+    setPasswordValidations(validatePassword(password));
+  }, [password]);
+
+  // Validate email, password, confirm password, full name, and date of birth
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    return {
+      hasLength: password.length >= 8,
+      hasCapital: /[A-Z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+  };
+
+  const validateConfirmPassword = (password: string, confirmPassword: string) => {
+    return password === confirmPassword && password !== "";
+  };
+
+  const validateFullName = (name: string) => {
+    return name.length >= 2 && /^[a-zA-Z\s]*$/.test(name);
+  };
+
+  const validateDateOfBirth = (dob: string) => {
+    if (!dob) return false;
+    const age = calculateAge(new Date(dob));
+    return age >= 18;
+  };
+
+  // Validate all fields on change
+  useEffect(() => {
+    setValidations({
+      email: validateEmail(email),
+      password: !!password && Object.values(validatePassword(password)).every(Boolean),//validatePassword(password),
+      confirmPassword: !!confirmPassword && validateConfirmPassword(password, confirmPassword),
+      fullName: fullName ? validateFullName(fullName) : false,
+      dateOfBirth: !!dateOfBirth && validateDateOfBirth(dateOfBirth)
+    });
+  }, [email, password, confirmPassword, fullName, dateOfBirth]);
+
+
+  const calculateAge = (birthDate: Date) => { // Calculate age from date of birth
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+    return age;
+  };
+
+  const handleAuth = async (event: React.FormEvent<HTMLFormElement>) => {
     if (event) event.preventDefault();
     setIsLoading(true);
     setError(null);
     setInfo(null);
 
-    try {
+    // Sign up or sign in
+    try { 
       if (isSigningUp) {
-        // Validate that password and confirmPassword match
-        if (password !== confirmPassword) {
-          setError("Passwords do not match");
+        if (!Object.values(validations).every(Boolean) || !agreeToTerms) {
+          setError("Please ensure all fields are valid");
           setIsLoading(false);
           return;
         }
-        // Validate other fields
-        if (!fullName) {
-          setError("Please enter your full name");
-          setIsLoading(false);
-          return;
-        }
-        if (!dateOfBirth) {
-          setError("Please enter your date of birth");
-          setIsLoading(false);
-          return;
-        }
-        // Verify age (e.g., 18+)
-        const userAge = calculateAge(new Date(dateOfBirth));
-        if (userAge < 18) {
-          setError("You must be at least 18 years old to sign up");
-          setIsLoading(false);
-          return;
-        }
-        if (!agreeToTerms) {
-          setError("You must agree to the terms and conditions");
-          setIsLoading(false);
-          return;
-        }
-
-        // Pass additional data to signUp function
-        await signUp(email, password, {
-          fullName,
-          dateOfBirth,
-        });
-        setInfo(
-          "A verification email has been sent. Please check your inbox and verify your email before logging in."
-        );
+        await signUp(email, password, { fullName, dateOfBirth });
+        setInfo("A verification email has been sent. Please check your inbox.");
         setIsSigningUp(false);
-        // Reset form fields
-        setPassword("");
-        setConfirmPassword("");
-        setFullName("");
-        setDateOfBirth("");
-        setAgreeToTerms(false);
+        resetForm();
       } else {
+        if (!validations.email || !validations.password) {
+          setError("Invalid email or password");
+          setIsLoading(false);
+          return;
+        }
         await signIn(email, password);
-        await refreshAuth(); // Refresh auth state after successful login
-        navigate("/"); // Redirect to home page
+        await refreshAuth();
+        navigate("/");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Auth error:", error);
-      setError(error.message);
+      setError((error as any).message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Helper function to calculate age
-  const calculateAge = (birthDate: Date) => {
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
+  /* ++++++++++ FUNCTIONS ++++++++++ */
+  const resetForm = () => {
+    setPassword("");
+    setConfirmPassword("");
+    setFullName("");
+    setDateOfBirth("");
+    setAgreeToTerms(false);
+    setError(null);
   };
 
-  /* ++++++++++ RENDER ++++++++++ */
+  // Get input class name
+  const getInputClassName = (isValid: boolean, value: string, isSigningUp: boolean) => `
+    w-full px-4 py-2 rounded-lg
+    border-2 transition-all duration-300 ease-in-out
+    ${
+      isSigningUp
+        ? isValid === true 
+          ? 'border-green-500' 
+          : isValid === false 
+            ? 'border-neon' 
+            : 'border-gray-300'
+        : value 
+          ? 'border-neon' 
+          : 'border-gray-300'
+    }
+    focus:outline-none focus:border-4
+    hover:border-opacity-80
+  `;
+
+  //
   return (
-    <div className="flex flex-col h-[50vh] text-center items-center">
-      <h2 className="text-6xl pt-12 pb-4 font-[900]">
+    <div className="flex flex-col min-h-[50vh] items-center p-8 bg-white">
+      <h2 className="text-6xl font-black mb-8 transition-all duration-300">
         {isSigningUp ? "Sign Up" : "Login"}
       </h2>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      {info && <p className="text-blue-500 mb-4">{info}</p>}
-
-      <form onSubmit={handleAuth} className="flex flex-col items-center">
-        {isSigningUp && (
-          <>
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-[25vw] min-w-[300px] max-w-[400px] mt-4 mb-8 border-neon border-2 p-1 focus:border-4 focus:outline-none"
-              required
-            />
-            <input
-              type="date"
-              placeholder="Date of Birth"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
-              className="w-[25vw] min-w-[300px] max-w-[400px] mb-8 border-neon border-2 p-1 focus:border-4 focus:outline-none"
-              required
-            />
-          </>
-        )}
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-[25vw] min-w-[300px] max-w-[400px] mt-4 mb-8 border-neon border-2 p-1 focus:border-4 focus:outline-none"
-          required
-        />
-        <div className="relative w-[25vw] min-w-[300px] max-w-[400px] mb-8">
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border-neon border-2 p-1 focus:border-4 focus:outline-none"
-            required
-          />
-          <span
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-            role="img"
-            aria-label={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? "🙈" : "👁️"}
-          </span>
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg transition-all duration-300">
+          {error}
         </div>
-        {/* Confirm Password Field */}
-        {isSigningUp && (
-          <div className="relative w-[25vw] min-w-[300px] max-w-[400px] mb-8">
+      )}
+      {info && (
+        <div className="mb-4 p-3 bg-blue-100 text-blue-700 rounded-lg transition-all duration-300">
+          {info}
+        </div>
+      )}
+
+      <form onSubmit={handleAuth} className="w-full max-w-md space-y-6">
+        <div className="space-y-6 transition-all duration-300">
+          {isSigningUp && (
+            <>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className={getInputClassName(validations.fullName, fullName, isSigningUp)}
+                  required
+                />
+                {fullName && validations.fullName === false && (
+                  <p className="text-sm text-red-500">Please enter a valid full name</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <input
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  className={getInputClassName(validations.dateOfBirth, dateOfBirth, isSigningUp)}
+                  required
+                />
+                {dateOfBirth && validations.dateOfBirth === false && (
+                  <p className="text-sm text-red-500">Must be 18 or older</p>
+                )}
+              </div>
+            </>
+          )}
+
+          <div className="space-y-2">
             <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full border-neon border-2 p-1 focus:border-4 focus:outline-none"
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={getInputClassName(validations.email, email, isSigningUp)}
               required
             />
-            <span
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-              role="img"
-              aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-              {showPassword ? "🙈" : "👁️"}
-            </span>
+            {email && validations.email === false && (
+              <p className="text-sm text-red-500">Please enter a valid email</p>
+            )}
           </div>
-        )}
-        {/* Terms and Conditions */}
-        {isSigningUp && (
-          <div className="mb-8">
-            <label className="inline-flex items-center">
+
+          <div className="relative space-y-2">
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={getInputClassName(validations.password, password, isSigningUp)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            
+            {isSigningUp && (
+            <div className="mt-2 space-y-1 text-sm">
+              <div className="flex items-center">
+                {passwordValidations.hasLength ? (
+                  <CheckCircle className="text-green-500 mr-2" />
+                ) : (
+                  <XCircle className="text-red-500 mr-2" />
+                )}
+                <span>At least 8 characters</span>
+              </div>
+              <div className="flex items-center">
+                {passwordValidations.hasCapital ? (
+                  <CheckCircle className="text-green-500 mr-2" />
+                ) : (
+                  <XCircle className="text-red-500 mr-2" />
+                )}
+                <span>One uppercase letter</span>
+              </div>
+              <div className="flex items-center">
+                {passwordValidations.hasNumber ? (
+                  <CheckCircle className="text-green-500 mr-2" />
+                ) : (
+                  <XCircle className="text-red-500 mr-2" />
+                )}
+                <span>One number</span>
+              </div>
+              <div className="flex items-center">
+                {passwordValidations.hasSpecial ? (
+                  <CheckCircle className="text-green-500 mr-2" />
+                ) : (
+                  <XCircle className="text-red-500 mr-2" />
+                )}
+                <span>One special character (!@#$...)</span>
+              </div>
+            </div>
+            )}
+          </div>
+
+          {isSigningUp && (
+            <div className="space-y-2">
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={getInputClassName(validations.confirmPassword, confirmPassword, isSigningUp)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {confirmPassword && validations.confirmPassword === false && (
+                <p className="text-sm text-red-500">Passwords must match</p>
+              )}
+            </div>
+          )}
+
+          {isSigningUp && (
+            <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 checked={agreeToTerms}
                 onChange={(e) => setAgreeToTerms(e.target.checked)}
-                className="form-checkbox"
+                className="w-4 h-4 text-neon border-neon rounded focus:ring-neon"
                 required
               />
-              <span className="ml-2">
+              <span className="text-sm text-gray-600">
                 I agree to the{" "}
-                <a
-                  href="/terms"
-                  target="_blank"
-                  className="text-blue-600 underline"
-                >
-                  Terms and Conditions
+                <a href="/terms" target="_blank" className="text-neon hover:underline">
+                  Terms
                 </a>{" "}
                 and{" "}
-                <a
-                  href="/privacy"
-                  target="_blank"
-                  className="text-blue-600 underline"
-                >
+                <a href="/privacy" target="_blank" className="text-neon hover:underline">
                   Privacy Policy
                 </a>
               </span>
-            </label>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-[300px] bg-neon text-white py-2 rounded-md hover:bg-[#2043b8] duration-[300ms] mb-4 ${
-            isLoading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+          className={`
+            w-full py-3 rounded-lg
+            bg-neon text-white font-medium
+            transform transition-all duration-300
+            hover:bg-opacity-90 hover:scale-[1.02]
+            disabled:opacity-50 disabled:cursor-not-allowed
+            disabled:hover:scale-100
+          `}
         >
           {isLoading ? "Loading..." : isSigningUp ? "Sign Up" : "Login"}
         </button>
@@ -223,16 +348,10 @@ const Login = () => {
       <button
         onClick={() => {
           setIsSigningUp(!isSigningUp);
-          // Reset form fields when toggling
-          setPassword("");
-          setConfirmPassword("");
-          setFullName("");
-          setDateOfBirth("");
-          setAgreeToTerms(false);
-          setError(null);
+          resetForm();
         }}
         disabled={isLoading}
-        className="text-neon hover:underline"
+        className="mt-6 text-neon hover:underline transition-all duration-300"
       >
         {isSigningUp ? "Have an account? Login" : "New here? Sign Up"}
       </button>
