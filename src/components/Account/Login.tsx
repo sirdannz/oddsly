@@ -1,6 +1,7 @@
 /* ++++++++++ LIBRARIES ++++++++++ */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 /* ++++++++++ ICONS ++++++++++ */
 import { Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
@@ -36,6 +37,9 @@ const Login = () => {
     fullName: false,
     dateOfBirth: false
   });
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY as string;
+
 
   const navigate = useNavigate();
   const { refreshAuth } = useAuth();
@@ -99,6 +103,13 @@ const Login = () => {
     setIsLoading(true);
     setError(null);
     setInfo(null);
+
+    // Complete reCAPTCHA before proceeding
+    if (!captchaVerified) {
+      setError("Please complete the reCAPTCHA");
+      setIsLoading(false);
+      return;
+    }
 
     // Sign up or sign in
     try { 
@@ -327,6 +338,16 @@ const Login = () => {
               </span>
             </div>
           )}
+
+          {isSigningUp && (
+            <div className="flex justify-center mt-4">
+              <ReCAPTCHA
+                sitekey={SITE_KEY}
+                onChange={() => setCaptchaVerified(true)}
+              />
+            </div>
+          )}
+
         </div>
 
         <button
