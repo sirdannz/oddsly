@@ -52,7 +52,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       const data = await response.json();
-      console.log('Auth check response:', data); // Debug log
 
       if (data.error) { // Check for error
         setAuthState({

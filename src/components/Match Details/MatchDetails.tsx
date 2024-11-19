@@ -416,7 +416,6 @@ const MatchDetailsPage: React.FC<MatchDetailsPageProps> = ({ bankroll, setBankro
     queryFn: async () => {
       try {
         const response = await fetchBothMatchDetails(sportKey!, matchId!);
-        console.log('API Response:', response);
         return response;
       } catch (error) {
         console.error('Error fetching match details:', error);
