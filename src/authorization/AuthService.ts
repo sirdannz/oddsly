@@ -1,5 +1,6 @@
 /* ++++++++++++++++++++ AUTHENTICATION SERVICE ++++++++++++++++++++ */
-const API_BASE_URL = 'https://oddsly-backend-three.vercel.app/api';
+// const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 /* ++++++++++ SIGN UP ++++++++++ */
 export const signUp = async (
@@ -42,6 +43,7 @@ export const signIn = async (email: string, password: string) => {
   
   if (!response.ok) {
     throw new Error(data.error || 'Failed to sign in');
+
   }
 
   return data;
@@ -106,7 +108,7 @@ export const getUserProfile = async () => {
 };
 
 /* ++++++++++ UPDATE USER PROFILE ++++++++++ */
-export const updateUserProfile = async (profileData: any) => {
+export const updateUserProfile = async (profileData: unknown) => {
   const response = await fetch(`${API_BASE_URL}/userProfile`, {
     method: 'PUT',
     credentials: 'include',

@@ -99,7 +99,11 @@ const Login = () => {
       resetForm();
     } catch (error) {
       console.error('Password reset error:', error);
-      setError((error as any).message);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -163,7 +167,11 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Auth error:", error);
-      setError((error as any).message);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setIsLoading(false);
     }

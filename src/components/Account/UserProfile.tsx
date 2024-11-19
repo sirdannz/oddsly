@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
+
+interface UserProfile {
+  fullName: string;
+  dateOfBirth: string;
+}
 import useAuth from '../../authorization/useAuth';
 import { getUserProfile, updateUserProfile } from '../../authorization/AuthService';
 
 const UserProfile: React.FC = () => {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [profile, setProfile] = useState<UserProfile | null>(null);  const [loading, setLoading] = useState<boolean>(true);
   const [editing, setEditing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -17,8 +21,7 @@ const UserProfile: React.FC = () => {
         const data = await getUserProfile();
         setProfile(data);
       } catch (err) {
-        setError((err as any).message);
-      } finally {
+        setError((err as Error).message);      } finally {
         setLoading(false);
       }
     };
@@ -37,8 +40,7 @@ const UserProfile: React.FC = () => {
       setSuccess('Profile updated successfully.');
       setEditing(false);
     } catch (err) {
-      setError((err as any).message);
-    }
+      setError((err as Error).message);    }
   };
 
   if (loading) {
@@ -62,8 +64,8 @@ const UserProfile: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700">Full Name</label>
           <input
             type="text"
-            value={profile.fullName || ''}
-            onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
+            value={profile?.fullName || ''}
+            onChange={(e) => setProfile(profile ? { ...profile, fullName: e.target.value } : null)}
             disabled={!editing}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           />
@@ -74,8 +76,8 @@ const UserProfile: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
           <input
             type="date"
-            value={profile.dateOfBirth || ''}
-            onChange={(e) => setProfile({ ...profile, dateOfBirth: e.target.value })}
+            value={profile?.dateOfBirth || ''}
+            onChange={(e) => setProfile(profile ? { ...profile, dateOfBirth: e.target.value } : null)}
             disabled={!editing}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           />
@@ -114,7 +116,7 @@ const UserProfile: React.FC = () => {
                 type="button"
                 onClick={() => {
                   setEditing(false);
-                  setProfile({ ...profile }); // Reset changes
+                  setProfile(profile ? { ...profile } : null); // Reset changes
                 }}
                 className="py-2 px-4 bg-gray-500 text-white rounded-lg"
               >

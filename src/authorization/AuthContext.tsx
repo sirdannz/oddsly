@@ -28,6 +28,9 @@ interface AuthContextType extends AuthState {
   refreshAuth: () => void;
 }
 
+// const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 /* ++++++++++ CONTEXT ++++++++++ */
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -42,7 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   /* ++++++++++ AUTHENTICATION CHECK ++++++++++ */
   const checkAuth = useCallback(async () => {
     try {
-      const response = await fetch('https://oddsly-backend-three.vercel.app/api/user', {
+      const response = await fetch(`${API_BASE_URL}/user`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -50,6 +53,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           'Content-Type': 'application/json',
         },
       });
+
+      if (!response.ok) {
+        throw new Error(`Failed with status: ${response.status}`);
+      }
 
       const data = await response.json();
 

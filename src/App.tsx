@@ -93,8 +93,18 @@ function App() {
 
 /* ++++++++++ PRIVATE ROUTE ++++++++++ */
 // PrivateRoute Component to handle protected routes
-function PrivateRoute({ user, children }: { user: any; children: JSX.Element }) { // Add user prop
+
+/*
+// UNCOMMENT TO DEACTIVATE AUTHORIZATION
+function PrivateRoute({ children }: { user: any; children: JSX.Element }) { // Add user prop
+  return children
+}
+*/
+
+// UNCOMMENT TO ACTIVATE AUTHORIZATION
+function PrivateRoute({ user, children }: { user: unknown; children: JSX.Element }) { // Add user prop
   return user ? children : <Navigate to="/login" replace />; // Redirect to login if user is not authenticated
 }
+
 
 export default App;

@@ -387,8 +387,7 @@ const OddsDataGrid: React.FC<OddsDataGridProps> = ({
         return false;
       });
     });
-  }, [matches, selectedMarket, selectedBooks, bankroll, showOnlyKellyBets, evFilterThreshold]);
-
+  }, [matches, selectedBooks, selectedMarket, bankroll, showOnlyKellyBets, evFilterThreshold, ALL_SPORTS]);
   // Create columns for the DataGrid
   const columns = useMemo(() => {
     const baseColumns = [
