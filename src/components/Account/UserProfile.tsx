@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 interface UserProfile {
   fullName: string;
   dateOfBirth: string;
+  subscriptionStatus: string;
 }
 import useAuth from '../../authorization/useAuth';
 import { getUserProfile, updateUserProfile } from '../../authorization/AuthService';
