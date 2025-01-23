@@ -94,6 +94,18 @@ const UserProfile: React.FC = () => {
           />
         </div>
 
+        {/* Subscription Status */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Subscription Status</label>
+          <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100">
+            {profile?.subscriptionStatus === 'active' ? (
+              <span className="text-green-600">Active Subscription</span>
+            ) : (
+              <span className="text-gray-600">No Active Subscription</span>
+            )}
+          </div>
+        </div>
+
         {/* Edit and Save Buttons */}
         <div className="flex items-center justify-between">
           {!editing ? (

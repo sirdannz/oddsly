@@ -3,7 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 /* ++++++++++ AUTHORIZATION ++++++++++ */
-import { AuthProvider } from './authorization/AuthContext'
+import { AuthProvider } from './authorization/AuthContext.tsx'
 
 /* ++++++++++ ALL CONTENT ++++++++++ */
 import App from './App.tsx'

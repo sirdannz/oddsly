@@ -28,6 +28,7 @@ export const signUp = async (
 
 
 /* ++++++++++ SIGN IN ++++++++++ */
+
 export const signIn = async (email: string, password: string) => {
   const response = await fetch(`${API_BASE_URL}/signin`, {
     method: 'POST',

@@ -727,7 +727,7 @@ const OddsPage: React.FC<OddsPageProps> = ({ bankroll, setBankroll }) => {
   /* ++++++++++ RENDER ++++++++++ */
   return (
     <ThemeProvider theme={theme}>
-      <div className="mt-4 text-black">
+      <div className="pt-8 text-black bg-white">
         {/* Search Bar with updated styling */}
         <div className="flex justify-center mb-6">
           <TextField

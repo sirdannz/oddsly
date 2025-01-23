@@ -15,6 +15,7 @@ interface User {
   email: string;
   email_verified: boolean;
   fullName?: string;
+  subscriptionStatus?: 'active' | 'inactive';
 
 }
 
@@ -72,7 +73,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const profile = await getUserProfile();
 
       setAuthState({
-        user: { ...data.user, fullName: profile.fullName },
+        user: { 
+          ...data.user, 
+          fullName: profile.fullName, 
+          subscriptionStatus: profile.subscriptionStatus 
+        },
         loading: false,
         error: null,
       });

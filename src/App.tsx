@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 /* ++++++++++ HEADER ++++++++++ */
 import Header from './components/Header/Header';
 
+/* ++++++++++ HOME ++++++++++ */
+import Home from './components/Home/Home';
+
 /* ++++++++++ MAIN CONTENT ++++++++++ */
 import OddsPage from './components/OddsPage';
 import MatchDetailsPage from './components/Match Details/MatchDetails';
@@ -31,11 +34,15 @@ function App() {
   const [bankroll, setBankroll] = useState<number>(10000);
   const { user, loading } = useAuth();
 
+  // Get current location
+  const location = window.location.pathname;
+  const isLoginPage = location === '/login';
+
   if (loading) {
     return (
 
       <div className="flex items-center justify-center min-h-screen">
-        <RingLoader size={300} color='#200589' speedMultiplier={1.25}/>
+        <RingLoader size={300} color='white' speedMultiplier={1.25}/>
       </div>
 
     );
@@ -44,17 +51,20 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <div className="min-h-screen p-4">
+        <div className="min-h-screen bg-[#171717]">
 
-          <Header />
+        {!isLoginPage && <Header />}
 
-          <Routes>
-            {/* Redirect logged-in users from the login page to the home page */}
-            <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
-
-            {/* Define a PrivateRoute wrapper for protected routes */}
+        <Routes>
+            {/* Home page as default route */}
+            <Route path="/" element={<Home />} />
+            
+            {/* Login page */}
+            <Route path="/login" element={<Login />} />
+            
+            {/* Protected routes */}
             <Route
-              path="/"
+              path="/odds"
               element={
                 <PrivateRoute user={user}>
                   <OddsPage bankroll={bankroll} setBankroll={setBankroll} />
@@ -69,12 +79,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-
-            {/* Legal pages */}
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/privacy" element={<PrivacyPolicyPage />} />
-
-            {/* User Profile */}
             <Route
               path="/profile"
               element={
@@ -84,9 +88,12 @@ function App() {
               }
             />
 
+            {/* Legal pages */}
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
           </Routes>
         </div>
-      </BrowserRouter>``
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }

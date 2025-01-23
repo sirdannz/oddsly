@@ -346,7 +346,7 @@ const MarketTable: React.FC<{
   ];
 
   return (
-    <div className="mb-8">
+    <div className="mb-8 bg-white">
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
       <div style={{ width: '100%' }}>
         <ThemeProvider theme={theme}>
@@ -444,7 +444,7 @@ const MatchDetailsPage: React.FC<MatchDetailsPageProps> = ({ bankroll, setBankro
   const details = matchDetails as MatchDetails;
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-8 bg-white">
       <Link to="/" className="flex items-center gap-2 text-neon mb-6 hover:underline">
         <ArrowLeft size={20} />
         Back to all matches
