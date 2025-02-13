@@ -101,19 +101,38 @@ function Login() {
   // 3) MOUNT: SET INITIAL BLACK PANEL POSITION
   // ----------------------------------------
   useEffect(() => {
-    if (!blackPanelRef.current || !formContainerRef.current || windowWidth < 900) return;
+    if (!formContainerRef.current) return;
   
-    // Immediately set the black panel to the correct side on mount
-    gsap.set(blackPanelRef.current, {
-      left: isSigningUp ? "58%" : "0%",
-    });
-  
-    // Immediately set the form container off-screen, 
-    // depending on whether we are signing up or logging in
+    // Set initial position for form container
     gsap.set(formContainerRef.current, {
       x: isSigningUp ? -1000 : 1000,
     });
   }, [windowWidth]);
+  
+  // 4) SLIDE THE FORM CONTAINER WHEN isSigningUp CHANGES
+  useEffect(() => {
+    if (!formContainerRef.current) return;
+    
+    // Animate the form container
+    gsap.fromTo(
+      formContainerRef.current,
+      { x: isSigningUp ? -1000 : 1000 }, // Starting position
+      {
+        x: 0, // End position
+        duration: 0.7,
+        ease: "power2.inOut",
+      }
+    );
+  
+    // Only animate black panel for desktop
+    if (windowWidth >= 900 && blackPanelRef.current) {
+      gsap.to(blackPanelRef.current, {
+        duration: 0.7,
+        left: isSigningUp ? "58%" : "0%",
+        ease: "power2.inOut",
+      });
+    }
+  }, [isSigningUp, windowWidth]);
 
   // ----------------------------------------
   // 4) SLIDE THE BLACK PANEL WHEN isSigningUp CHANGES
@@ -559,7 +578,7 @@ function Login() {
       {windowWidth >= 900 && (
         <div
           ref={blackPanelRef}
-          className="absolute top-0 h-full bg-secondary"
+          className="absolute top-0 h-full bg-black"
           style={{ width: "42%", left: 0 }} 
           // We only set left:0 initially; GSAP will animate to left:58% if isSigningUp
         >
@@ -599,7 +618,7 @@ function Login() {
             ? isSigningUp
               ? "absolute top-0 left-[1%] w-[58%] h-full -translate-x-1/2 flex items-center justify-center"
               : "absolute top-0 right-[0%] w-[58%] h-full translate-x-1/2 flex items-center justify-center"
-            : "w-[90%] max-w-[500px] flex items-center justify-center"
+            : "w-[90%] max-w-[500px] max-h-[90vh] overflow-y-auto flex items-center justify-center"
         }`}
       >
         {renderAuthForms()}
