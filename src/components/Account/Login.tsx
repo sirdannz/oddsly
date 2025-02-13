@@ -571,8 +571,8 @@ function Login() {
   // ----------------------------------------
   return (
     <div
-      className={`relative w-screen h-screen overflow-hidden bg-[url('/3d-gradient.jpg')] 
-      bg-cover bg-center ${windowWidth < 900 ? "flex items-center justify-center" : ""}`}
+      className={`relative w-screen min-h-screen overflow-y-auto bg-[url('/3d-gradient.jpg')] 
+      bg-cover bg-center ${windowWidth < 900 ? "py-8 px-4" : ""}`}
     >
       {/* Black panel for wide screens only */}
       {windowWidth >= 900 && (
@@ -618,10 +618,13 @@ function Login() {
             ? isSigningUp
               ? "absolute top-0 left-[1%] w-[58%] h-full -translate-x-1/2 flex items-center justify-center"
               : "absolute top-0 right-[0%] w-[58%] h-full translate-x-1/2 flex items-center justify-center"
-            : "w-[90%] max-w-[500px] max-h-[90vh] overflow-y-auto flex items-center justify-center"
+            : "w-full max-w-[500px] mx-auto my-4" // Updated for mobile
         }`}
       >
-        {renderAuthForms()}
+        {/* Update the form wrapper div's classes */}
+        <div>
+          {renderAuthForms()}
+        </div>
       </div>
     </div>
   );
