@@ -15,7 +15,6 @@ import MatchDetailsPage from './components/Match Details/MatchDetails'
 
 /* ++++++++++ AUTHORIZATION / LOGIN ++++++++++ */
 import Login from "./components/Account/Login";
-import RingLoader from 'react-spinners/RingLoader'
 
 /* ++++++++++ USER PROFILE ++++++++++ */
 import UserProfile from './components/Account/UserProfile'
