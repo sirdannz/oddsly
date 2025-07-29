@@ -1,51 +1,41 @@
 /* ++++++++++ IMPORTS ++++++++++ */
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 /* ++++++++++ HEADER ++++++++++ */
-import Header from './components/Header/Header';
+import Header from './components/Header/Header'
 
 /* ++++++++++ HOME ++++++++++ */
-import Home from './components/Home/Home';
+import Home from './components/Home/Home'
 
 /* ++++++++++ MAIN CONTENT ++++++++++ */
-import OddsPage from './components/OddsPage';
-import MatchDetailsPage from './components/Match Details/MatchDetails';
+import OddsPage from './components/OddsPage'
+import MatchDetailsPage from './components/Match Details/MatchDetails'
 
 /* ++++++++++ AUTHORIZATION / LOGIN ++++++++++ */
-import useAuth from "./authorization/useAuth";
 import Login from "./components/Account/Login";
 import RingLoader from 'react-spinners/RingLoader'
 
 /* ++++++++++ USER PROFILE ++++++++++ */
-import UserProfile from './components/Account/UserProfile';
+import UserProfile from './components/Account/UserProfile'
 
 /* ++++++++++ LEGAL ++++++++++ */
-import TermsPage from './components/Legal/TermsPage';
-import PrivacyPolicyPage from './components/Legal/PrivacyPolicyPage';
+import TermsPage from './components/Legal/TermsPage'
+import PrivacyPolicyPage from './components/Legal/PrivacyPolicyPage'
 
 /* ++++++++++ STYLES ++++++++++ */
-import './App.css';
+import './App.css'
 
 const queryClient = new QueryClient();
 
 function App() {
   const [bankroll, setBankroll] = useState<number>(10000);
-  const { user, loading } = useAuth();
 
-  // Get current location
+  // Auto-redirect away from login page
   const location = window.location.pathname;
-  const isLoginPage = location === '/login';
-
-  if (loading) {
-    return (
-
-      <div className="flex items-center justify-center min-h-screen">
-        <RingLoader size={300} color='white' speedMultiplier={1.25}/>
-      </div>
-
-    );
+  if (location === '/login') {
+    window.location.href = '/odds'; // or '/' if you want the home screen
   }
 
   return (
@@ -53,20 +43,21 @@ function App() {
       <BrowserRouter>
         <div className="min-h-screen bg-[#171717]">
 
-        {!isLoginPage && <Header />}
+          {/* Show header unless on login page */}
+          {location !== '/login' && <Header />}
 
-        <Routes>
+          <Routes>
             {/* Home page as default route */}
             <Route path="/" element={<Home />} />
-            
-            {/* Login page */}
+
+            {/* Login page (won't be used due to redirect above) */}
             <Route path="/login" element={<Login />} />
-            
-            {/* Protected routes */}
+
+            {/* Protected routes (auth bypassed) */}
             <Route
               path="/odds"
               element={
-                <PrivateRoute user={user}>
+                <PrivateRoute>
                   <OddsPage bankroll={bankroll} setBankroll={setBankroll} />
                 </PrivateRoute>
               }
@@ -74,7 +65,7 @@ function App() {
             <Route
               path="/match/:sportKey/:matchId"
               element={
-                <PrivateRoute user={user}>
+                <PrivateRoute>
                   <MatchDetailsPage bankroll={bankroll} setBankroll={setBankroll} />
                 </PrivateRoute>
               }
@@ -82,7 +73,7 @@ function App() {
             <Route
               path="/profile"
               element={
-                <PrivateRoute user={user}>
+                <PrivateRoute>
                   <UserProfile />
                 </PrivateRoute>
               }
@@ -98,20 +89,9 @@ function App() {
   );
 }
 
-/* ++++++++++ PRIVATE ROUTE ++++++++++ */
-// PrivateRoute Component to handle protected routes
-
-/*
-// UNCOMMENT TO DEACTIVATE AUTHORIZATION
-function PrivateRoute({ children }: { user: any; children: JSX.Element }) { // Add user prop
-  return children
+/* ++++++++++ PRIVATE ROUTE (No Auth) ++++++++++ */
+function PrivateRoute({ children }: { children: JSX.Element }) {
+  return children;
 }
-*/
-
-// UNCOMMENT TO ACTIVATE AUTHORIZATION
-function PrivateRoute({ user, children }: { user: unknown; children: JSX.Element }) { // Add user prop
-  return user ? children : <Navigate to="/login" replace />; // Redirect to login if user is not authenticated
-}
-
 
 export default App;
