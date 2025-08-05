@@ -15,7 +15,6 @@ const SUPPORTED_PLAYER_PROP_SPORTS = [
 ];
 
 const PLAYER_PROP_MARKETS = [
-  // NFL / NCAAF
   'player_pass_yds',
   'player_pass_tds',
   'player_rush_yds',
@@ -28,7 +27,6 @@ const PLAYER_PROP_MARKETS = [
   'player_1st_td',
   'player_anytime_td',
 
-  // MLB
   'player_hits',
   'player_home_runs',
   'player_strikeouts',
@@ -38,7 +36,6 @@ const PLAYER_PROP_MARKETS = [
   'player_pitching_outs',
   'player_walks',
 
-  // NBA
   'player_points',
   'player_rebounds',
   'player_assists',
@@ -46,22 +43,17 @@ const PLAYER_PROP_MARKETS = [
   'player_blocks',
   'player_steals',
   'player_turnovers',
-  'player_pras',  // Points + Rebounds + Assists
-  'player_par',   // Points + Assists + Rebounds
-  'player_pra',   // Points + Rebounds + Assists
+  'player_pras',
+  'player_par',
+  'player_pra',
 
-  // NHL
-  'player_points',
   'player_shots_on_goal',
-  'player_assists',
   'player_goals',
   'player_saves',
 
-  // MMA
   'fighter_significant_strikes',
   'fighter_takedowns',
 
-  // Tennis
   'player_aces',
   'player_double_faults',
   'player_total_games_won',
@@ -104,13 +96,13 @@ export const fetchOdds = async (sport: string, market: string = 'h2h') => {
     const response = await axios.get(`${API_BASE_URL}/sports/${sport}/odds`, {
       params: {
         apiKey: API_KEY,
-        regions: 'us,us2',
+        regions: 'us_dfs',
         markets: market,
         oddsFormat: 'american'
       },
     });
     const filteredOdds = response.data.filter((bookmaker: any) =>
-      ['underdogfantasy', 'prizepicks'].includes(bookmaker.key)
+      ['underdog', 'prizepicks'].includes(bookmaker.key)
     );
     return filteredOdds;
   } catch (error) {
@@ -128,13 +120,13 @@ export const fetchMatchDetails = async (sport: string, matchId: string) => {
     const response = await axios.get(`${API_BASE_URL}/sports/${sport}/events/${matchId}/odds`, {
       params: {
         apiKey: API_KEY,
-        regions: 'us,us2',
+        regions: 'us_dfs',
         markets: PLAYER_PROP_MARKETS.join(','),
         oddsFormat: 'american'
       },
     });
     const filteredOdds = response.data.filter((bookmaker: any) =>
-      ['underdogfantasy', 'prizepicks'].includes(bookmaker.key)
+      ['underdog', 'prizepicks'].includes(bookmaker.key)
     );
     return filteredOdds;
   } catch (error) {
@@ -152,13 +144,13 @@ export const fetchBothMatchDetails = async (sport: string, matchId: string) => {
     const response = await axios.get(`${API_BASE_URL}/sports/${sport}/events/${matchId}/odds`, {
       params: {
         apiKey: API_KEY,
-        regions: 'us,us2',
+        regions: 'us_dfs',
         markets: 'h2h,spreads',
         oddsFormat: 'american'
       }
     });
     const filteredOdds = response.data.filter((bookmaker: any) =>
-      ['underdogfantasy', 'prizepicks'].includes(bookmaker.key)
+      ['underdog', 'prizepicks'].includes(bookmaker.key)
     );
     return filteredOdds;
   } catch (error) {
@@ -171,7 +163,7 @@ export const fetchPlayerProps = async (
   sport: string,
   matchId: string,
   markets: PlayerPropMarket[] = defaultMarkets,
-  region: string = 'us,us2',
+  region: string = 'us_dfs',
 ) => {
   if (!SUPPORTED_PLAYER_PROP_SPORTS.includes(sport)) {
     console.warn(`fetchPlayerProps not supported for: ${sport}`);
@@ -187,7 +179,7 @@ export const fetchPlayerProps = async (
       }
     });
     const filteredOdds = response.data.filter((bookmaker: any) =>
-      ['underdogfantasy', 'prizepicks'].includes(bookmaker.key)
+      ['underdog', 'prizepicks'].includes(bookmaker.key)
     );
     return filteredOdds;
   } catch (error) {
