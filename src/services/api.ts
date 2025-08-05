@@ -5,7 +5,6 @@ const API_KEY = import.meta.env.VITE_ODDS_API_KEY;
 
 const SUPPORTED_PLAYER_PROP_SPORTS = ['americanfootball_nfl', 'americanfootball_ncaaf', 'baseball_mlb', 'basketball_nba', 'icehockey_nhl', 'mma_mixed_martial_arts', 'tennis_atp_french_open', 'tennis_wta_french_open'];
 
-// Define all available player prop markets
 const PLAYER_PROP_MARKETS = [
   'player_assists',
   'player_field_goals',
@@ -36,18 +35,13 @@ const PLAYER_PROP_MARKETS = [
   'player_last_td'
 ] as const;
 
-// Define the type using the values
 type PlayerPropMarket = (typeof PLAYER_PROP_MARKETS)[number];
-
-// Create a non-readonly array of the markets for the default parameter
 const defaultMarkets: PlayerPropMarket[] = [...PLAYER_PROP_MARKETS];
 
 export const fetchSports = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/sports`, {
-      params: { 
-        apiKey: API_KEY
-      },
+      params: { apiKey: API_KEY },
     });
     return response.data;
   } catch (error) {
@@ -59,9 +53,7 @@ export const fetchSports = async () => {
 export const fetchBookmakers = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/bookmakers`, {
-      params: { 
-        apiKey: API_KEY
-      },
+      params: { apiKey: API_KEY },
     });
     return response.data;
   } catch (error) {
@@ -84,7 +76,10 @@ export const fetchOdds = async (sport: string, market: string = 'h2h') => {
         oddsFormat: 'american'
       },
     });
-    return response.data;
+    const filteredOdds = response.data.filter((bookmaker: any) =>
+      ['underdogfantasy', 'prizepicks'].includes(bookmaker.key)
+    );
+    return filteredOdds;
   } catch (error) {
     console.error('Error fetching odds:', error);
     throw error;
@@ -105,7 +100,10 @@ export const fetchMatchDetails = async (sport: string, matchId: string) => {
         oddsFormat: 'american'
       },
     });
-    return response.data;
+    const filteredOdds = response.data.filter((bookmaker: any) =>
+      ['underdogfantasy', 'prizepicks'].includes(bookmaker.key)
+    );
+    return filteredOdds;
   } catch (error) {
     console.error('Error fetching match details:', error);
     throw error;
@@ -126,7 +124,10 @@ export const fetchBothMatchDetails = async (sport: string, matchId: string) => {
         oddsFormat: 'american'
       }
     });
-    return response.data;
+    const filteredOdds = response.data.filter((bookmaker: any) =>
+      ['underdogfantasy', 'prizepicks'].includes(bookmaker.key)
+    );
+    return filteredOdds;
   } catch (error) {
     console.error('Error fetching match details:', error);
     throw error;
@@ -152,7 +153,10 @@ export const fetchPlayerProps = async (
         oddsFormat: 'american'
       }
     });
-    return response.data;
+    const filteredOdds = response.data.filter((bookmaker: any) =>
+      ['underdogfantasy', 'prizepicks'].includes(bookmaker.key)
+    );
+    return filteredOdds;
   } catch (error) {
     console.error('Error fetching player props:', error);
     throw error;
