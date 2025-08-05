@@ -3,36 +3,69 @@ import axios from 'axios';
 const API_BASE_URL = 'https://api.the-odds-api.com/v4';
 const API_KEY = import.meta.env.VITE_ODDS_API_KEY;
 
-const SUPPORTED_PLAYER_PROP_SPORTS = ['americanfootball_nfl', 'americanfootball_ncaaf', 'baseball_mlb', 'basketball_nba', 'icehockey_nhl', 'mma_mixed_martial_arts', 'tennis_atp_french_open', 'tennis_wta_french_open'];
+const SUPPORTED_PLAYER_PROP_SPORTS = [
+  'americanfootball_nfl',
+  'americanfootball_ncaaf',
+  'baseball_mlb',
+  'basketball_nba',
+  'icehockey_nhl',
+  'mma_mixed_martial_arts',
+  'tennis_atp_french_open',
+  'tennis_wta_french_open'
+];
 
 const PLAYER_PROP_MARKETS = [
-  'player_assists',
-  'player_field_goals',
-  'player_kicking_points',
-  'player_pass_attempts',
-  'player_pass_completions',
-  'player_pass_interceptions',
-  'player_pass_longest_completion',
-  'player_pass_rush_reception_tds',
-  'player_pass_rush_reception_yds',
-  'player_pass_tds',
+  // NFL / NCAAF
   'player_pass_yds',
-  'player_pats',
+  'player_pass_tds',
+  'player_rush_yds',
   'player_receptions',
-  'player_reception_longest',
   'player_reception_yds',
   'player_rush_attempts',
-  'player_rush_longest',
-  'player_rush_reception_tds',
-  'player_rush_reception_yds',
-  'player_rush_yds',
-  'player_sacks',
-  'player_solo_tackles',
-  'player_tackles_assists',
+  'player_pass_completions',
+  'player_pass_interceptions',
   'player_tds_over',
   'player_1st_td',
   'player_anytime_td',
-  'player_last_td'
+
+  // MLB
+  'player_hits',
+  'player_home_runs',
+  'player_strikeouts',
+  'player_total_bases',
+  'player_rbis',
+  'player_runs_scored',
+  'player_pitching_outs',
+  'player_walks',
+
+  // NBA
+  'player_points',
+  'player_rebounds',
+  'player_assists',
+  'player_threes_made',
+  'player_blocks',
+  'player_steals',
+  'player_turnovers',
+  'player_pras',  // Points + Rebounds + Assists
+  'player_par',   // Points + Assists + Rebounds
+  'player_pra',   // Points + Rebounds + Assists
+
+  // NHL
+  'player_points',
+  'player_shots_on_goal',
+  'player_assists',
+  'player_goals',
+  'player_saves',
+
+  // MMA
+  'fighter_significant_strikes',
+  'fighter_takedowns',
+
+  // Tennis
+  'player_aces',
+  'player_double_faults',
+  'player_total_games_won',
+  'player_total_sets_won'
 ] as const;
 
 type PlayerPropMarket = (typeof PLAYER_PROP_MARKETS)[number];
@@ -96,7 +129,7 @@ export const fetchMatchDetails = async (sport: string, matchId: string) => {
       params: {
         apiKey: API_KEY,
         regions: 'us,us2',
-        markets: ['h2h', 'spreads', 'totals', 'player_pass_tds', 'player_pass_yds', 'player_rush_yds', 'player_receptions'],
+        markets: PLAYER_PROP_MARKETS.join(','),
         oddsFormat: 'american'
       },
     });
